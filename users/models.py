@@ -3,22 +3,23 @@ from django.db import models
 
 # Create your models here.
 
+
 class User(AbstractUser):
     coins = models.IntegerField(default=0)
 
     groups = models.ManyToManyField(
-        'auth.Group',
-        verbose_name='groups',
+        "auth.Group",
+        verbose_name="groups",
         blank=True,
-        help_text='The groups this user belongs to.',
+        help_text="The groups this user belongs to.",
         related_name="custom_user_set",
         related_query_name="user",
     )
     user_permissions = models.ManyToManyField(
-        'auth.Permission',
-        verbose_name='user permissions',
+        "auth.Permission",
+        verbose_name="user permissions",
         blank=True,
-        help_text='Specific permissions for this user.',
+        help_text="Specific permissions for this user.",
         related_name="custom_user_set",
         related_query_name="user",
     )
@@ -34,6 +35,7 @@ class RewardLog(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.amount} coins at {self.given_at}"
+
 
 class ScheduledReward(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
