@@ -2,18 +2,22 @@
 from django.contrib.auth.hashers import make_password
 from django.db import migrations
 
+from config import settings
+
+
 def create_dummy_user(apps, schema_editor):
     User = apps.get_model('users', 'User')
 
-    if not User.objects.filter(username='dummy').exists():
-        User.objects.create(
-            username='dummy',
-            email='dummy@example.com',
-            password=make_password('dummy123'),
-            is_staff=False,
-            is_superuser=False,
-            coins=0,
-        )
+    if settings.DEBUG:
+        if not User.objects.filter(username='dummy').exists():
+            User.objects.create(
+                username='dummy',
+                email='dummy@example.com',
+                password=make_password('dummy123'),
+                is_staff=False,
+                is_superuser=False,
+                coins=0,
+            )
 
 class Migration(migrations.Migration):
 
