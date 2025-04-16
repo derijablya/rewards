@@ -17,6 +17,7 @@ django-cors-headers = "^4.7.0"
 python-dotenv = "^1.1.0"
 black = "^25.1.0"
 uvicorn = "^0.34.1"
+drf-spectacular = "^0.28.0"
 
 
 [build-system]
