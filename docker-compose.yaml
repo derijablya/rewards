@@ -47,7 +47,7 @@ services:
 
   celery:
     build: .
-    command: celery -A rewards worker -l info
+    command: celery -A config worker -l info
     env_file:
       - .env
     volumes:
@@ -58,7 +58,7 @@ services:
 
   celery-beat:
     build: .
-    command: celery -A rewards beat -l info
+    command: celery -A config beat -l info
     env_file:
       - .env
     volumes:
