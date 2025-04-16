@@ -9,6 +9,7 @@ from .models import RewardLog, ScheduledReward
 from .serializers import UserProfileSerializer, RewardLogSerializer
 from django.utils import timezone
 from datetime import timedelta
+from .tasks import process_scheduled_reward
 
 
 class ProfileView(APIView):
@@ -29,19 +30,11 @@ class RewardLogView(APIView):
 
 
 class RequestRewardView(APIView):
-    permission_classes = [IsAuthenticated]
-
     def post(self, request):
-        user = request.user
-
-        # Проверяем, был ли уже запрос сегодня
-        today = timezone.now().date()
-        today_rewards = RewardLog.objects.filter(
-            user=user,
-            given_at__date=today
-        )
-
-        if today_rewards.exists():
+        if RewardLog.objects.filter(
+            user=request.user,
+            given_at__date=timezone.now().date()
+        ).exists():
             return Response(
                 {"error": "You can request only one reward per day"},
                 status=status.HTTP_400_BAD_REQUEST
@@ -49,12 +42,17 @@ class RequestRewardView(APIView):
 
         execute_at = timezone.now() + timedelta(minutes=5)
         reward = ScheduledReward.objects.create(
-            user=user,
+            user=request.user,
             amount=10,
             execute_at=execute_at
         )
 
+        process_scheduled_reward.apply_async(
+            args=[reward.id],
+            eta=execute_at
+        )
+
         return Response(
-            {"message": f"Reward scheduled. Will be given at {execute_at}"},
+            {"message": f"Reward will be given at {execute_at}"},
             status=status.HTTP_201_CREATED
         )

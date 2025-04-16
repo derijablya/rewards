@@ -1,28 +1,18 @@
 from celery import shared_task
-from django.utils import timezone
-from .models import ScheduledReward, RewardLog, User
+from .models import ScheduledReward, RewardLog
 
 
 @shared_task
-def process_scheduled_rewards():
-    now = timezone.now()
-    rewards = ScheduledReward.objects.filter(
-        execute_at__lte=now,
-        is_processed=False
-    )
+def process_scheduled_reward(reward_id):
+    try:
+        reward = ScheduledReward.objects.get(id=reward_id)
+        reward.user.coins += reward.amount
+        reward.user.save()
 
-    for reward in rewards:
-        try:
-            user = reward.user
-            user.coins += reward.amount
-            user.save()
-
-            RewardLog.objects.create(
-                user=user,
-                amount=reward.amount
-            )
-
-            reward.is_processed = True
-            reward.save()
-        except Exception as e:
-            print(f"Error processing reward {reward.id}: {str(e)}")
+        RewardLog.objects.create(
+            user=reward.user,
+            amount=reward.amount
+        )
+        reward.delete()
+    except ScheduledReward.DoesNotExist:
+        pass
